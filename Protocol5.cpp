@@ -7,6 +7,7 @@ int Protocol5::ID = 0;
 Protocol5::Protocol5()
 {
 	id = ID++;
+	physical_layer.add_device(this);
 }
 void Protocol5::enable_network_layer() 
 {
