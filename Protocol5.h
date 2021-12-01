@@ -1,4 +1,7 @@
+#ifndef PROTOCOL5_H
+#define PROTOCOL5_H
 #include <queue>
+#include<vector>
 #include"timer.h"
 
 /* data structures for layer*/
@@ -29,11 +32,13 @@ typedef enum
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /*Protocol5 class  */
+#include"Physical_Layer.h"
 class Protocol5
 {
 
 private:
 	static int ID;
+	static Physical_Layer physical_layer;
 	bool network_layer_status;
 	unsigned long long timers[MAX_SEQ + 1];
 	void from_network_layer(packet *p);
@@ -58,10 +63,12 @@ private:
 public:
 	
 	std::queue<packet> Network_layer;
-	std::queue<frame> Physical_layer;
+	std::queue<frame> Physical_layer_queue;
 	unsigned int id;
 
 	Protocol5();
 	void Start(void);
 
 };
+
+#endif
