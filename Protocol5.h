@@ -49,7 +49,7 @@ private:
 	void from_network_layer(packet *p);
 	void to_network_layer(packet *p);
 	void from_physical_layer(frame *r);
-	void to_physical_layer(frame *s);
+	void to_physical_layer(frame *s, unsigned int id);
 	packet buffer[MAX_SEQ + 1];
 	bool is_lastF_data;
 	void wait_for_event(event_type *event);
