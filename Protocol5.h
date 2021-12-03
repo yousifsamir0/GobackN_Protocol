@@ -3,11 +3,11 @@
 #include <queue>
 #include <vector>
 #include "timer.h"
+#include "string.h"
 
 /* data structures for layer*/
 #define MAX_PKT 1 /* determines packet size in bytes */
 #define MAX_SEQ 7
-#define inc(x) x = (x + 1) % (MAX_SEQ + 1);
 
 typedef unsigned int seq_nr; /* sequence or ack numbers */
 typedef struct
@@ -37,22 +37,31 @@ typedef enum
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /*Protocol5 class  */
-#include "Physical_Layer.h"
+class Physical_Layer;
+
 class Protocol5
 {
 
 private:
-	static int ID;
-	static Physical_Layer physical_layer;
+	seq_nr next_frame_to_send;	/* MAX_SEQ > 1; used for outbound stream */
+	seq_nr ack_expected;		/* oldest frame as yet unacknowledged */
+	seq_nr frame_expected;		/* next frame expected on inbound stream */
+	frame r;					/* scratch variable */
+	packet buffer[MAX_SEQ + 1]; /* buffers for the outbound stream */
+	seq_nr nbuffered;			/* # output buffers currently in use */
+	seq_nr i;					/* used to index into the buffer array */
+	event_type event = no_event;
 	bool network_layer_status;
+	bool is_lastF_data;
 	unsigned long long timers[MAX_SEQ + 1];
+
+	static int ID;
+	Physical_Layer *physical_layer;
 	void from_network_layer(packet *p);
 	void to_network_layer(packet *p);
 	void from_physical_layer(frame *r);
-	void to_physical_layer(frame *s, unsigned int id);
-	packet buffer[MAX_SEQ + 1];
-	bool is_lastF_data;
-	void wait_for_event(event_type *event);
+	void to_physical_layer(frame *s);
+	void wait_for_event();
 	void start_timer(seq_nr k);
 	void stop_timer(seq_nr k);
 	void enable_network_layer(void);
@@ -61,14 +70,29 @@ private:
 	void send_ack(seq_nr frame_nr, seq_nr frame_expected);
 	bool check_timeout();
 	bool between(seq_nr a, seq_nr b, seq_nr c);
+	void inc(seq_nr &x);
 
 public:
+	std::string name;
 	std::queue<packet> Network_layer;
 	std::queue<frame> Physical_layer_queue;
 	unsigned int id;
 
-	Protocol5();
+	Protocol5(Physical_Layer *pl);
 	void Start(void);
+	void send_message(std::string m);
+
+	friend class Physical_Layer;
 };
 
+class Physical_Layer
+{
+public:
+	Physical_Layer();
+	void add_device(Protocol5 *device);
+	void send(frame f, int ID);
+
+private:
+	std::vector<Protocol5 *> devices; // assumption-> the use of only two devices
+};
 #endif
