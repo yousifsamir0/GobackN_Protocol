@@ -90,6 +90,23 @@ bool Protocol5::between(seq_nr a, seq_nr b, seq_nr c)
 		return (false);
 }
 
+
+/////////////////////////////////
+void Protocol5::wait_for_event(event_type* event) {
+
+	if (network_layer_status)
+		*event = network_layer_ready;
+	elseif(! check_timeout())
+		* event = timeout;
+	elseif(Physical_layer_queue.empty()&& is_lastF_data)
+		* event = answerack;
+	else
+		*event = frame_arrival;
+}
+
+///////////////////////////////////
+
+
 void Protocol5::Start()
 {
 
